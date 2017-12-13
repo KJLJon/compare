@@ -5,22 +5,20 @@ import (
 	"github.com/mattn/go-jsonpointer"
 	"strconv"
 	"strings"
-	//"log"
 )
 
 type Operator string
 
 const (
-	EQUAL Operator = "="
-	LESS_THAN Operator = "<"
-	LESS_THAN_EQUAL Operator = "<="
-	GREATER_THAN Operator = ">"
+	EQUAL              Operator = "="
+	LESS_THAN          Operator = "<"
+	LESS_THAN_EQUAL    Operator = "<="
+	GREATER_THAN       Operator = ">"
 	GREATER_THAN_EQUAL Operator = ">="
-	NOT_EQUAL Operator = "!="
-	IN Operator = "in"
-	NOT_IN Operator = "not-in"
+	NOT_EQUAL          Operator = "!="
+	IN                 Operator = "in"
+	NOT_IN             Operator = "not-in"
 )
-
 
 type GroupCompare struct {
 	Name     string
@@ -42,58 +40,60 @@ func MultipleGroups(groups []GroupCompare, input interface{}) ([]string, error) 
 	var matched bool
 	var err error
 	matches := []string{}
-	
+
 	for _, group := range groups {
 		matched, err = Group(group, input)
-		if (err != nil) {
+		if err != nil {
 			return nil, err
-		} else if (matched) {
+		} else if matched {
 			matches = append(matches, group.Name)
 		}
 	}
-	
+
 	return matches, nil
 }
 
+// checks a GroupCompare to see if the input matches the criteria
 func Group(group GroupCompare, input interface{}) (bool, error) {
 	matched, err := compareMultipleCriteria(group.Criteria, input)
-	if (err != nil) {
+	if err != nil {
 		return false, err
 	}
-	
+
 	return matched, nil
 }
 
-func Eval(a interface{}, operator Operator, b interface{}) (bool, error)  {
+// Logical evaulator.  Takes two items and compares them based on the Operator passed in
+func Eval(a interface{}, operator Operator, b interface{}) (bool, error) {
 	var err error
 
 	switch a.(type) {
 	case float64, float32, int:
 		var nbrA float64
 		var nbrB float64
-		
+
 		nbrA, err = normalizeNumberValue(a)
-		if (err != nil) {
+		if err != nil {
 			return false, err
 		}
-		
+
 		nbrB, err = normalizeNumberValue(b)
-		if (err != nil) {
+		if err != nil {
 			return false, err
 		}
-		
+
 		return compareNumber(nbrA, operator, nbrB)
 	case string:
 		var strA string
 		var strB string
-		
+
 		strA, err = normalizeStringValue(a)
-		if (err != nil) {
+		if err != nil {
 			return false, err
 		}
-		
+
 		strB, err = normalizeStringValue(b)
-		if (err != nil) {
+		if err != nil {
 			return false, err
 		}
 
@@ -103,21 +103,21 @@ func Eval(a interface{}, operator Operator, b interface{}) (bool, error)  {
 	}
 }
 
-
+// compares multiple Criteria (runs Eval on each Criteria)
 func compareMultipleCriteria(rules []Criteria, input interface{}) (bool, error) {
 	var compare bool
 	for _, criteria := range rules {
 		value, err := jsonpointer.Get(input, criteria.Key)
-		if (err != nil) {
+		if err != nil {
 			return false, err
 		}
 
 		compare, err = Eval(value, criteria.Operator, criteria.Compare)
-		if (err != nil) {
+		if err != nil {
 			return compare, err
 		}
 
-		if (compare == false) {
+		if compare == false {
 			return false, nil
 		}
 	}
@@ -125,6 +125,7 @@ func compareMultipleCriteria(rules []Criteria, input interface{}) (bool, error) 
 	return true, nil
 }
 
+// checks if an item is in the array
 func inArray(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
@@ -134,6 +135,7 @@ func inArray(a string, list []string) bool {
 	return false
 }
 
+// logical compare two strings based on Operator provided
 func compareString(str string, operator Operator, compare string) (bool, error) {
 	switch operator {
 	case EQUAL:
@@ -149,6 +151,7 @@ func compareString(str string, operator Operator, compare string) (bool, error) 
 	}
 }
 
+// logical compare two numbers based on Operator provided
 func compareNumber(nbr float64, operator Operator, compare float64) (bool, error) {
 	switch operator {
 	case EQUAL:
@@ -168,6 +171,7 @@ func compareNumber(nbr float64, operator Operator, compare float64) (bool, error
 	}
 }
 
+// normalizes an interface into a string
 func normalizeStringValue(value interface{}) (string, error) {
 	switch value.(type) {
 	case int:
@@ -183,6 +187,7 @@ func normalizeStringValue(value interface{}) (string, error) {
 	}
 }
 
+// normalizes an interface into a number
 func normalizeNumberValue(value interface{}) (float64, error) {
 	switch value.(type) {
 	case int:
@@ -197,5 +202,3 @@ func normalizeNumberValue(value interface{}) (float64, error) {
 		return 0, errors.New("Unsupported number type")
 	}
 }
-
-

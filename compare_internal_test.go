@@ -8,9 +8,9 @@ import (
  * Mock test for TestInArray
  */
 var inArrayTest = []struct {
-	list	[]string
-	a		string
-	expect	bool
+	list   []string
+	a      string
+	expect bool
 }{
 	{[]string{"foo", "bar"}, "foo", true},
 	{[]string{"foo", "bar"}, "bar", true},
@@ -21,10 +21,10 @@ var inArrayTest = []struct {
  * Mock test for TestCompareString
  */
 var compareStringTest = []struct {
-	str			string
-	operator	Operator
-	compare		string
-	expect		bool
+	str      string
+	operator Operator
+	compare  string
+	expect   bool
 }{
 	{"foo", EQUAL, "foo", true},
 	{"foo", EQUAL, "bar", false},
@@ -40,10 +40,10 @@ var compareStringTest = []struct {
  * Mock test for TestCompareNumber
  */
 var compareNumberTest = []struct {
-	nbr			float64
-	operator	Operator
-	compare		float64
-	expect		bool
+	nbr      float64
+	operator Operator
+	compare  float64
+	expect   bool
 }{
 	//test operators with integers
 	{1, EQUAL, 1, true},
@@ -85,7 +85,7 @@ func TestInArray(t *testing.T) {
 func TestCompareString(t *testing.T) {
 	for _, test := range compareStringTest {
 		actual, err := compareString(test.str, test.operator, test.compare)
-		if (err != nil) {
+		if err != nil {
 			t.Fatalf("error: %v", err)
 		}
 		if actual != test.expect {
@@ -100,7 +100,7 @@ func TestCompareString(t *testing.T) {
 func TestCompareNumber(t *testing.T) {
 	for _, test := range compareNumberTest {
 		actual, err := compareNumber(test.nbr, test.operator, test.compare)
-		if (err != nil) {
+		if err != nil {
 			t.Fatalf("error: %v", err)
 		}
 		if actual != test.expect {
